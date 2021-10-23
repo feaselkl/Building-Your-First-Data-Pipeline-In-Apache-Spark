@@ -1,0 +1,618 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Catallaxy Services | Building Your First Data Pipeline in Apache Spark</title>
+
+		<link rel="stylesheet" href="../reveal.js/dist/reset.css">
+		<link rel="stylesheet" href="../reveal.js/dist/reveal.css">
+		<link rel="stylesheet" href="../reveal.js/dist/theme/black.css" id="theme">
+		<link rel="stylesheet" href="../WebsiteAssets/mods.css">
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="../reveal.js/plugin/highlight/monokai.css" id="highlight-theme">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h2>Building Your First Data Pipeline in Apache Spark</h2>
+					
+					<a href="https://www.catallaxyservices.com">Kevin Feasel</a> (<a href="https://twitter.com/feaselkl">@feaselkl</a>)<br />
+					<a href="https://csmore.info/on/pipeline">https://csmore.info/on/pipeline</a>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Who Am I?  What Am I Doing Here?</h3>
+					<div class="container">
+						<div class="col">
+							<table class="whoami">
+								<tr>
+									<td><a href="https://csmore.info"><img src="../WebsiteAssets/Logo.png" height="100" /></a></td>
+									<td nowrap><a href="https://csmore.info">Catallaxy Services</a></td>
+								</tr>
+								<tr>
+									<td><a href="https://curatedsql.com"><img src="../WebsiteAssets/CuratedSQLLogo.png" height="100" /></a></td>
+									<td nowrap><a href="https://curatedsql.com">Curated SQL</a></td>
+								</tr>
+								<tr>
+									<td><a href="https://csmore.info/on/training"><img src="../WebsiteAssets/Teachable.png" height="120" /></a></td>
+									<td nowrap><a href="https://csmore.info/on/training">Training on Teachable</a></td>
+								</tr>
+							</table>
+						</div>
+						<div class="col">
+							<a href="http://www.twitter.com/feaselkl"><img src="../WebsiteAssets/HeadShot.jpg" height="358" width="315" /></a>
+							<br />
+							<a href="http://www.twitter.com/feaselkl">@feaselkl</a>
+						</div>					
+					</div>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/motivation.jpg" data-background-opacity="0.2">
+					<h3>Motivation</h3>
+					
+					<p>My goals in this talk:</p>
+					
+					<ul>
+						<li>Explain what Apache Spark is.</li>
+						<li>Flesh out the metaphor of data pipelines.</li>
+						<li>Provide a quick primer on Azure Databricks.</li>
+						<li>Explain what a data lake is and making the best use of it.</li>
+						<li>Implement a data science pipeline, including development, deployment, and management.</li>
+					</ul>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Agenda</h3>
+					
+					<ol>
+						<li class="active">What Is Apache Spark?</li>
+						<li>The Data Pipeline</li>
+						<li>Getting Started with Databricks</li>
+						<li>Transforming Data in the Data Lake</li>
+						<li>Machine Learning and Experimentation</li>
+						<li>Workflow Management</li>
+					</ol>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/sparkler.jpg" data-background-opacity="0.2">
+					<h3>The Genesis of Spark</h3>
+
+					<p>Spark started as a research project at the University of California Berkeley’s Algorithms, Machines, People Lab (AMPLab) in 2009.  The project's goal was to develop in-memory cluster computing, avoiding MapReduce's reliance on heavy I/O use.</p>
+
+					<p>The first open source release of Spark was 2010, concurrent with a paper from Matei Zaharia, et al.</p>
+
+					<p>In 2012, Zaharia, et al release a paper on Resilient Distributed Datasets.</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Resilient Distributed Datasets</h3>
+
+					<p>The Resilient Distributed Dataset (RDD) forms the core of Apache Spark.  It is:</p>
+
+					<ul>
+						<li>Immutable – you never change an RDD itself; instead, you apply transformation functions to return a new RDD</li>
+					</ul>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Resilient Distributed Datasets</h3>
+
+					<p>The Resilient Distributed Dataset (RDD) forms the core of Apache Spark.  It is:</p>
+
+					<ul>
+						<li>Immutable</li>
+						<li>Distributed – executors (akin to data nodes) split up the data set into sizes small enough to fit into those machines’ memory</li>
+					</ul>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Resilient Distributed Datasets</h3>
+
+					<p>The Resilient Distributed Dataset (RDD) forms the core of Apache Spark.  It is:</p>
+
+					<ul>
+						<li>Immutable</li>
+						<li>Distributed</li>
+						<li>Resilient – in the event that one executor fails, the driver (akin to a name node) recognizes this failure and enlists a new executor to finish the job</li>
+					</ul>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Resilient Distributed Datasets</h3>
+
+					<p>The Resilient Distributed Dataset (RDD) forms the core of Apache Spark.  It is:</p>
+
+					<ul>
+						<li>Immutable</li>
+						<li>Distributed</li>
+						<li>Resilient</li>
+						<li>Lazy – Executors try to minimize the number of data-changing operations</li>
+					</ul>
+					
+					<p>Add all of this together and you have the key component behind Spark.</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/frame.jpg" data-background-opacity="0.2">
+					<h3>The Evolution of Spark</h3>
+					
+					<p>One of the first additions to Spark was SQL support, first with Shark and then with Spark SQL.</p>
+
+					<p>With Apache Spark 2.0, Spark SQL can take advantage of Datasets (strongly typed RDDs) and DataFrames (Datasets with named columns).</p>
+
+					<p>Spark SQL functions are accessible within the SparkSession object, created by default as “spark” in the Spark shell.</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/paper-stack.jpg" data-background-opacity="0.2">
+					<h3>Use Cases for Spark</h3>
+
+					<p>Apache Spark is a versatile platform and is popular for several things:</p>
+
+					<ul>
+						<li>Processing and transforming data in batches</li>
+						<li>Distributed machine learning</li>
+						<li>Centralizing analytics for organizations</li>
+						<li>Near-real-time streaming of data</li>
+					</ul>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/Jerusalem_King_David_Street_graffiti_closeup.jpg" data-background-opacity="0.35">
+					<h3>Language Support</h3>
+
+					<p>Apache Spark has "first-class" support for three languages:  Scala, Python, and Java.</p>
+
+					<p>In addition to this, it has "second-class" support for two more languages:  SQL and R.</p>
+					
+					<p>Further, there are projects which extend things further, such as .NET for Apache Spark, which adds C# and F# support.</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/clouds.jpg" data-background-opacity="0.2">
+					<h3>Use Spark in Azure</h3>
+
+					<p>There are several ways to use Apache Spark in the Azure ecosystem, such as:</p>
+
+					<ul>
+						<li>Azure Databricks</li>
+						<li>Azure Synapse Analytics</li>
+						<li>Azure HDInsight</li>
+						<li>Azure Data Factory</li>
+						<li>Installing Spark on VM</li>
+						<li>Running a container with Spark installed</li>
+					</ul>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Agenda</h3>
+					
+					<ol>
+						<li>What Is Apache Spark?</li>
+						<li class="active">The Data Pipeline</li>
+						<li>Getting Started with Databricks</li>
+						<li>Transforming Data in the Data Lake</li>
+						<li>Machine Learning and Experimentation</li>
+						<li>Workflow Management</li>
+					</ol>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Pipelines as a Metaphor</h3>
+
+					<p>Pipelines are a common metaphor in computer science.  For example:</p>
+					
+					<table>
+						<thead>
+							<tr>
+								<th style="width:25%">Environment</th>
+								<th>Example</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Unix (sh)</td>
+								<td><code style="font-size:smaller">grep "Aubrey" Employee.txt | uniq | wc -l</code></td>
+							</tr>
+							<tr>
+								<td>F#</td>
+								<td><code style="font-size:smaller">movies |> Seq.filter(fun m -> m.Title = Title) |> Seq.head</code></td>
+							</tr>
+							<tr>
+								<td>Powershell</td>
+								<td><code style="font-size:smaller">gci *.sql -Recurse | Select-String "str"</code></td>
+							</tr>
+							<tr>
+								<td>R</td>
+								<td><code style="font-size:smaller">inputs %>% filter(val > 5) %>% select(col1, col2)</code></td>
+							</tr>
+						</tbody>
+					</table>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/pipeline.jpg" data-background-opacity="0.2">
+					<h3>Pipelines for Data</h3>
+
+					<p>In all of the prior examples, sections of code combine together as connected pipes in a pipeline, with data flowing through them and transforming at each step.</p>
+					
+					<p>In addition to these code-based pipelines, we have many examples of graphical pipelines.</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>SQL Server Integration Services</h3>
+
+					<img src="presentation/assets/image/SSIS.jpg" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Informatica</h3>
+
+					<img src="presentation/assets/image/Informatica.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Apache NiFi</h3>
+
+					<img src="presentation/assets/image/NiFi.png" height="550" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Filling Out the Metaphor</h3>
+
+					<p>The pipeline metaphor works extremely well:</p>
+					
+					<img src="presentation/assets/image/0_Pipeline.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Filling Out the Metaphor</h3>
+
+					<p>Each segment of code is a transformer which modifies the fluid in some way.</p>
+					
+					<img src="presentation/assets/image/1_Transformers.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Filling Out the Metaphor</h3>
+
+					<p>Transformers are connected together with pipes.</p>
+					
+					<img src="presentation/assets/image/2_Pipes.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Filling Out the Metaphor</h3>
+
+					<p>Data acts as a fluid, moving from transformer to transformer via the pipes.</p>
+					
+					<img src="presentation/assets/image/3_Fluid.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Filling Out the Metaphor</h3>
+
+					<p>Some transformers are "streaming" or non-blocking, meaning that fluid pushes through without collecting.  Think of a mesh filter which strains out particulate matter.</p>
+					
+					<img src="presentation/assets/image/4_Streaming.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Filling Out the Metaphor</h3>
+
+					<p>Some transformers are blocking, meaning that they need to collect all of the data before moving on.  Think of a reservoir which collects all of the fluid, mixes it with something, and then turns a flow control valve to allow the fluid to continue to the next transformer.</p>
+					
+					<img src="presentation/assets/image/5_Blocking.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Filling Out the Metaphor</h3>
+
+					<p>Backpressure happens when a downstream component processes more slowly than upstream components.  In the case of sufficient backpressure, the fluid may stop pushing forward and can back up.</p>
+					
+					<img src="presentation/assets/image/6_Backpressure.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Filling Out the Metaphor</h3>
+
+					<p>Breaking our metaphor, data doesn't move exactly like a fluid.  Instead, it typically moves in buffers:  discrete blocks of information held in memory and transferred from one stage to the next.  We see this as a specific number of rows processed at a time or a specific amount of data processed at a time.</p>
+					
+					<img src="presentation/assets/image/7_Buffers.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Filling Out the Metaphor</h3>
+
+					<p>The way to regulate backpressure in a data system is to wait for a downstream component to ask for a buffer before sending it and processing the next.  Now, we avoid the risk of out-of-memory errors from creating too many buffers or buffers being lost because the downstream component can't collect them.</p>
+					
+					<img src="presentation/assets/image/8_Waits.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Agenda</h3>
+					
+					<ol>
+						<li>What Is Apache Spark?</li>
+						<li>The Data Pipeline</li>
+						<li class="active">Getting Started with Databricks</li>
+						<li>Transforming Data in the Data Lake</li>
+						<li>Machine Learning and Experimentation</li>
+						<li>Workflow Management</li>
+					</ol>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Getting Started with Databricks</h3>
+
+					<div class="container">
+						<div class="col">
+							<p>Databricks, the commercial enterprise behind Apache Spark, makes available the Databricks Unified Analytics Platform in <a href="https://databricks.com/aws">AWS</a> and <a href="https://databricks.com/product/azure">Azure</a>.  They also have a <a href="https://community.cloud.databricks.com/">Community Edition</a>, available for free.</p>
+						</div>
+						<div class="col">
+							<img src="presentation/assets/image/DatabricksCommunityEdition.png" />
+						</div>					
+					</div>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Getting Started with Databricks</h3>
+
+					<p>First, search for "databricks" and select the <code>Azure Databricks</code> option.</p>
+					
+					<img src="presentation/assets/image/301_Databricks.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<img src="presentation/assets/image/302_CreateWorkspace.png" height="600" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<img src="presentation/assets/image/303_Networking.png" height="600" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<img src="presentation/assets/image/304_LaunchWorkspace.png" height="600" />
+				</section>
+				
+				<section data-background-image="presentation/assets/background/demo.jpg" data-background-opacity="0.2">
+					<h3>Demo Time</h3>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Agenda</h3>
+					
+					<ol>
+						<li>What Is Apache Spark?</li>
+						<li>The Data Pipeline</li>
+						<li>Getting Started with Databricks</li>
+						<li class="active">Transforming Data in the Data Lake</li>
+						<li>Machine Learning and Experimentation</li>
+						<li>Workflow Management</li>
+					</ol>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/lake.jpg" data-background-opacity="0.2">
+					<h3>The Data Lake</h3>
+					
+					<p>The concept of the data lake comes from a key insight:  not all relevant data fits the structure of a data warehouse.  Furthermore, there is a lot of effort involved in adding new data to a warehouse.</p>
+					
+					<p>Data is typically stored in the data lake as files, and may include delimited files, files using specialized formats (ORC, Parquet), or even binaries (images, videos, audio) depending on the need.</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>A Sample Data Lake</h3>
+					
+					<img src="presentation/assets/image/ToyotaConnectedDataLake.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/background/levels.jpg" data-background-opacity="0.2">
+					<h3>The Layers</h3>
+					
+					<p>We usually think of three layers of a data lake, which Databricks called "bronze," "silver," and "gold."</p>
+					
+					<img src="presentation/assets/image/delta-azure.png" height="450" />
+				</section>
+				
+				<section data-background-image="presentation/assets/background/arrow-right.jpg" data-background-opacity="0.2">
+					<h3>Moving Between Layers</h3>
+					
+					<p>The process of cleaning, refining, enriching, and polishing data allows us to migrate it from bronze to silver to gold.  All of this happens through data pipelines, either automated piplines (which can feed results into a data warehouse or other analytics platform) or manual pipelines for ad hoc research.</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/demo.jpg" data-background-opacity="0.2">
+					<h3>Demo Time</h3>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/warehouse-water.jpg" data-background-opacity="0.2">
+					<h3>The Data Lakehouse</h3>
+					
+					<p>Databricks has coined the term Lakehouse to represent the combination of data warehouse and data lake in one managed area.</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>The Data Lakehouse</h3>
+					
+					<img src="presentation/assets/image/data-lakehouse.png" height="450" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Agenda</h3>
+					
+					<ol>
+						<li>What Is Apache Spark?</li>
+						<li>The Data Pipeline</li>
+						<li>Getting Started with Databricks</li>
+						<li>Transforming Data in the Data Lake</li>
+						<li class="active">Machine Learning and Experimentation</li>
+						<li>Workflow Management</li>
+					</ol>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>The Data Science Process</h3>
+					
+					<div class="container">
+						<div class="col">
+							<img src="presentation/assets/image/tdsp-lifecycle2.png" />
+						</div>
+						<div class="col">
+							<p>The Microsoft Team Data Science Process is one example of a process for implementing data science and machine learning tasks.</p>
+						</div>					
+					</div>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/robot.jpg" data-background-opacity="0.2">
+					<h3>Machine Learning with Spark</h3>
+					
+					<p>Spark supports machine learning using the native MLlib library which works with RDDs.</p>
+					
+					<p>On top of this, there is a <code>spark.ml</code> namespace which works with DataFrames.</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Experiments</h3>
+					
+					<div class="container">
+						<div class="col">
+							<p>Experiments give you an opportunity to group together different trials in solving a given problem.</p>
+						</div>	
+						<div class="col">
+							<img src="presentation/assets/image/03-01-03-experiment.png" height="550" />
+						</div>
+					</div>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Models</h3>
+					
+					<p>Once you've landed on an answer, register your trained model.</p>
+					
+					<img src="presentation/assets/image/Models.png" height="450" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Deployment</h3>
+					
+					<p>Serving a model is easy through the UI.</p>
+					
+					<img src="presentation/assets/image/ModelServing.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/background/process.jpg" data-background-opacity="0.2">
+					<h3>CI/CD</h3>
+					
+					<p>Just as with data loading, we'll want to create repeatable processes to train, register, and serve models, and one answer is the same as before:  notebook workflows.</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/demo.jpg" data-background-opacity="0.2">
+					<h3>Demo Time</h3>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Agenda</h3>
+					
+					<ol>
+						<li>What Is Apache Spark?</li>
+						<li>The Data Pipeline</li>
+						<li>Getting Started with Databricks</li>
+						<li>Transforming Data in the Data Lake</li>
+						<li>Machine Learning and Experimentation</li>
+						<li class="active">Workflow Management</li>
+					</ol>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Jobs</h3>
+					
+					<p>Databricks jobs allow us to schedule the execution of notebooks, Java executables (JAR files), Python scripts, and <code>spark-submit</code> calls.</p>
+					
+					<img src="presentation/assets/image/Jobs.png" height="450" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Creating a Job</h3>
+					
+					<p>When creating a job, it's best to use a purpose-built cluster--this costs $0.25 per DBU-hour less than all-purpose compute clusters, which can be a considerable cost savings over the course of a month.</p>
+					
+					<img src="presentation/assets/image/CreateJob.png" height="350" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Scheduling a Job</h3>
+					
+					<p>Each job can run manually or on a fixed schedule of your choosing.</p>
+					
+					<img src="presentation/assets/image/JobSchedule.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Job Results</h3>
+					
+					<p>Review job results after a run to see what it did and to investigate any errors which pop up.</p>
+					
+					<img src="presentation/assets/image/JobResults.png" />
+				</section>
+				
+				<section data-background-image="presentation/assets/background/demo.jpg" data-background-opacity="0.2">
+					<h3>Demo Time</h3>
+				</section>
+
+				<section data-background-image="presentation/assets/background/wrappingup.jpg" data-background-opacity="0.2">
+					<h3>Wrapping Up</h3>
+
+					<p>Over the course of this talk, we have learned about the basics of Apache Spark, data pipelines, and data lakes.  Along the way, we created notebook workflows for data lake population as well as machine learning.</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Wrapping Up</h3>
+					
+					<p>
+						To learn more, go here:
+						<br />
+						<a href="https://csmore.info/on/pipeline">https://csmore.info/on/pipeline</a>
+					</p>
+					<br />
+					<p>
+						And for help, contact me:
+						<br />
+						<a href="mailto:feasel@catallaxyservices.com">feasel@catallaxyservices.com</a> | <a href="https://www.twitter.com/feaselkl">@feaselkl</a>
+					</p>
+					<br />
+					<p>
+						Catallaxy Services consulting:
+						<br />
+						<a href="https://csmore.info/contact">https://CSmore.info/on/contact</a>
+					</p>
+				</section>
+			</div>
+		</div>
+
+		<script src="../reveal.js/dist/reveal.js"></script>
+		<script src="../reveal.js/plugin/zoom/zoom.js"></script>
+		<script src="../reveal.js/plugin/notes/notes.js"></script>
+		<script src="../reveal.js/plugin/search/search.js"></script>
+		<script src="../reveal.js/plugin/markdown/markdown.js"></script>
+		<script src="../reveal.js/plugin/math/math.js"></script>
+		<script src="../reveal.js/plugin/menu/menu.js"></script>
+		<script src="../reveal.js/plugin/highlight/highlight.js"></script>
+		<script src="../reveal.js/plugin/chart/Chart.min.js"></script>
+		<script src="../reveal.js/plugin/chart/plugin.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				width: '70%',
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+				transition: 'fade',
+				
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight, RevealMath, RevealMenu, RevealChart ]
+			});
+		</script>
+	</body>
+</html>
